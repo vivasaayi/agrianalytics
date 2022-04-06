@@ -8,6 +8,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from .forms import UploadFileForm
 
+from django.views.decorators.csrf import csrf_exempt
+
 from analytics.ml import ml
 ml.load_models()
 
@@ -27,9 +29,23 @@ def index(request):
             return HttpResponseRedirect('/analytics/predict_mnist?name={}'.format(file_name))
     else:
         form = UploadFileForm()
-    return render(request, 'analytics/index.html', {'form': form})
+        return render(request, 'analytics/index.html', {'form': form})
 
     return render(request, 'analytics/index.html', {})
+
+@csrf_exempt
+def uploadfile(request):
+    if request.method == 'POST':
+        file = request.FILES["files[0]"]
+        file_name = handle_uploaded_file({
+            "file": file
+        })
+    else:
+        form = UploadFileForm()
+        return render(request, 'analytics/index.html', {'form': form})
+
+    return render(request, 'analytics/index.html', {})
+
 
 def health(request):
     return HttpResponse("Hello, world!")
